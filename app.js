@@ -372,10 +372,16 @@
         sliderItem: 'ins-slider-item',
         sliderImage: 'ins-slider-image',
         slideNav: 'ins-slide-nav',
+        prevButton: 'ins-prev-button',
+        nextButton: 'ins-next-button',
+        thumbnailWrapper: 'ins-thumbnail-wrapper',
+        thumbnailItem: 'ins-thumbnail-item',
+        thumbnailImage: 'ins-thumbnail-image',
         navbarItem: 'ins-navbar-item',
         navLink: 'ins-nav-link',
         backgroundImage: 'ins-background-image',
         active: 'ins-active',
+        thumbActive: 'ins-thumb-active',
     };
 
     const selectors = Object.keys(classes).reduce((createdSelector, key) => (
@@ -409,7 +415,8 @@
     self.buildCSS = () => {
         const { style } = classes;
         const { wrapper, backgroundImage, navbar, navbarItem, navLink, active, container, sliderWrapper,
-            sliderItem, sliderImage, slider, carouselWrapper } = selectors;
+            sliderItem, sliderImage, slider, carouselWrapper, prevButton, nextButton, thumbnailWrapper,
+            thumbnailItem, thumbnailImage, slideNav, thumbActive } = selectors;
 
         const customStyle = `
             <style class="${style}">
@@ -426,7 +433,7 @@
                 }
 
                 ${container} {
-                    padding: 12px 35px;
+                    padding: 12px 0 35px;
                 }
 
                 ${backgroundImage} {
@@ -462,11 +469,17 @@
                     background-color: transparent;
                 }
 
+                ${carouselWrapper} {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                }
+
                 ${slider} {
                     width: 100%;
                     height: 100%;
                     overflow: hidden;
-                    margin: 0 auto;
                     max-width: 1168px;
                 }
 
@@ -488,11 +501,62 @@
                     border-radius: 40px;
                 }
 
+                ${slideNav} {
+                    position: relative;
+                }
+
+                ${prevButton},
+                ${nextButton} {
+                    position: absolute;
+                    transform: translate(-50%, -50%);
+                    top: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 50px;
+                    height: 50px;
+                    background-color: #fff;
+                    border-radius: 50%;
+                }
+
+                ${prevButton}{
+                    left: -70px;
+                }
+
+                ${nextButton}{
+                    right: -105px;
+                }
+                
+                ${thumbnailWrapper} {
+                    display: flex;
+                    align-items: center;
+                    flex-wrap: nowrap;
+                }
+                
+                ${thumbnailItem} {
+                    width: 120px;
+                    height: 45px;
+                    background-color: #fff;
+                    border-radius: 5px;
+                    overflow: hidden;
+                    margin-right: 15px;
+                }
+                
+                ${thumbnailImage} {
+                    width: 100%;
+                    height: 100%;
+                }
+                
+
                 ${active} {
                     border-style: none;
                     background-color: #fef6eb;
                     color: #f28e00;
                     border-radius: 30px;
+                }
+
+                ${thumbActive} {
+                    height: 55px;
                 }
 
             </style>
@@ -502,7 +566,8 @@
 
     self.buildHTML = () => {
         const { wrapper, container, navbar, carouselWrapper, slider, slideNav, backgroundImage,
-            navbarItem, navLink, active, sliderWrapper, sliderItem, sliderImage } = classes;
+            navbarItem, navLink, active, sliderWrapper, sliderItem, sliderImage, prevButton, nextButton,
+            thumbnailWrapper, thumbnailItem, thumbnailImage, thumbActive } = classes;
 
         const outerHTML = `
             <div class="${wrapper}">
@@ -525,7 +590,25 @@
                                 `).join('')}
                             </div>
                         </div>
-                        <div class="${slideNav}"></div>
+                        <div class="${slideNav}">
+                            <div class="${prevButton}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="18" viewBox="0 0 11 18">
+                                    <path d="M10.06.94A1.5 1.5 0 0 0 8.054.835L7.94.94l-7 7a1.5 1.5 0 0 0-.103 2.008l.103.114 7 7a1.5 1.5 0 0 0 2.225-2.008l-.103-.114L4.12 9l5.94-5.94a1.5 1.5 0 0 0 .103-2.007L10.06.94z" fill="#F28E00" fill-rule="nonzero"/>
+                                </svg>
+                            </div>
+                            <div class="${nextButton}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="18" viewBox="0 0 11 18">
+                                    <path d="M.94.94A1.5 1.5 0 0 1 2.946.835L3.06.94l7 7a1.5 1.5 0 0 1 .103 2.008l-.103.114-7 7a1.5 1.5 0 0 1-2.225-2.008l.103-.114L6.88 9 .939 3.06a1.5 1.5 0 0 1-.103-2.007L.94.94z" fill="#F28E00" fill-rule="nonzero"/>
+                                </svg>
+                            </div>
+                            <div class="${thumbnailWrapper}">
+                                ${config.stuff.items.map((item, index) => `
+                                    <div class="${thumbnailItem} ${index === 0 ? thumbActive : ''}">
+                                        <img src="${item.image}" class="${thumbnailImage}">
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
