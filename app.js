@@ -4,6 +4,9 @@
     let currentPosition = 0;
     let currentIndex = 0;
     let activeCategory = 'stuff';
+    let isDragging = false;
+    let startX = 0;
+    let changedX = 0;
 
     const config = {
         stuff: {
@@ -497,6 +500,8 @@
                 ${sliderItem} {
                     flex: 0 0 100%;
                     width: 100%;
+                    display: flex;
+                    justify-content: center;
                 }
 
                 ${sliderImage} {
@@ -574,6 +579,28 @@
                     height: 55px;
                 }
 
+                @media (max-width: 1535px) {
+
+                    ${slideNav} {
+                        max-width: 1266px;
+                    }
+
+                    ${navLink} {
+                        padding: 5px 15px;
+                    }
+                }
+
+                @media (max-width: 1480px){
+
+                    ${slideNav} {
+                        max-width: 1150px;
+                    }
+
+                    ${sliderImage} {
+                        width: 1120px;
+                    }
+
+                }
             </style>
         `;
         $('head').append(customStyle);
@@ -600,7 +627,7 @@
                             <div class="${sliderWrapper}">
                                 ${config[activeCategory].items.map(item => `
                                     <div class="${sliderItem}">
-                                        <img src="${item.image}" class="${sliderImage}">
+                                        <img src="${item.image}" class="${sliderImage}" draggable="false">
                                     </div>
                                 `).join('')}
                             </div>
@@ -619,7 +646,7 @@
                             <div class="${thumbnailWrapper}">
                                 ${config[activeCategory].items.map((item, index) => `
                                     <div class="${thumbnailItem} ${index === 0 ? thumbActive : ''}">
-                                        <img src="${item.image}" class="${thumbnailImage}">
+                                        <img src="${item.image}" class="${thumbnailImage}" draggable="false">
                                     </div>
                                 `).join('')}
                             </div>
@@ -632,7 +659,7 @@
     };
 
     self.setEvents = () => {
-        const { prevButton, nextButton, thumbnailItem, navLink } = selectors;
+        const { prevButton, nextButton, thumbnailItem, navLink, sliderWrapper } = selectors;
 
         $(document).on('click', prevButton, () => self.goTo(currentIndex - 1));
         $(document).on('click', nextButton, () => self.goTo(currentIndex + 1));
@@ -646,6 +673,38 @@
             const key = $(event.currentTarget).data('category');
             if (!key || key === activeCategory) return;
             self.switchCategory(key);
+        });
+
+        $(document).on("mousedown touchstart", sliderWrapper, (e) => {
+            isDragging = true;
+            startX = e.pageX || e.originalEvent.touches[0].pageX;
+        
+            $(sliderWrapper).css("transition", "none");
+        });
+        
+        $(document).on("mousemove touchmove", (e) => {
+            if (!isDragging) return;
+
+            const x = e.pageX || e.originalEvent.touches[0].pageX;
+            changedX = x - startX;
+
+            $(sliderWrapper).css("transform", `translateX(${currentPosition + changedX}px)`);
+        });
+        
+        $(document).on("mouseup touchend", () => {
+            if (!isDragging) return;
+            isDragging = false;
+        
+            $(sliderWrapper).css("transition", "transform .5s ease");
+        
+            if (changedX > 50) {
+                self.goTo(currentIndex - 1);
+            } else if (changedX < -50) {
+                self.goTo(currentIndex + 1);
+            } else {
+                self.goTo(currentIndex);
+            }
+            changedX = 0;
         });
     };
 
@@ -679,7 +738,7 @@
 
         $(backgroundImage).attr('src', config[key].items[currentIndex].bgImage);
     };
-    
+
     self.updateThumbScroll = () => {
         const { thumbnailWrapper, thumbnailItem } = selectors;
 
@@ -728,7 +787,7 @@
 
         const slidesHTML = config[key].items.map(item => `
             <div class="${sliderItem}">
-                <img src="${item.image}" class="${sliderImage}">
+                <img src="${item.image}" class="${sliderImage}" draggable="false">
             </div>
         `).join('');
 
@@ -741,7 +800,7 @@
 
         const thumbnailsHTML = config[key].items.map((item, idx) => `
             <div class="${thumbnailItem} ${idx === 0 ? thumbActive : ''}">
-                <img src="${item.image}" class="${thumbnailImage}">
+                <img src="${item.image}" class="${thumbnailImage}" draggable="false">
             </div>
         `).join('');
 
