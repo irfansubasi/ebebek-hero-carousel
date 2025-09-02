@@ -697,9 +697,9 @@
         
             $(sliderWrapper).css("transition", "transform .5s ease");
         
-            if (changedX > 50) {
+            if (changedX > 200) {
                 self.goTo(currentIndex - 1);
-            } else if (changedX < -50) {
+            } else if (changedX < -200) {
                 self.goTo(currentIndex + 1);
             } else {
                 self.goTo(currentIndex);
