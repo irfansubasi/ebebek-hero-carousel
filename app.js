@@ -365,12 +365,17 @@
                 },
             ]
         },
-        eventName: '.ins-event',
+
     };
 
-    const storageConfig = {};
+    const storageConfig = {
+        cacheExpiry: 1,
+        category: 'insActiveCategory',
+    };
 
-    const eventConfig = {};
+    const eventConfig = {
+        eventName: '.ins-event',
+    };
 
     const classes = {
         style: 'ins-custom-style',
@@ -403,6 +408,10 @@
         if (typeof window.jQuery === 'undefined') {
             self.loadJQuery();
         } else {
+            const savedCategoryKey = self.getLocalStorage(storageConfig.category);
+            if (savedCategoryKey && config[savedCategoryKey]) {
+                activeCategory = savedCategoryKey;
+            }
             self.reset();
             self.buildCSS();
             self.buildHTML();
@@ -421,7 +430,7 @@
 
     self.reset = () => {
         const { wrapper, style } = selectors;
-        const { eventName } = config;
+        const { eventName } = eventConfig;
 
         $(wrapper).remove();
         $(style).remove();
@@ -676,7 +685,7 @@
 
     self.setEvents = () => {
         const { prevButton, nextButton, thumbnailItem, navLink, sliderWrapper, thumbnailWrapper } = selectors;
-        const { eventName } = config;
+        const { eventName } = eventConfig;
 
         $(document).on(`click${eventName}`, prevButton, () => self.goTo(currentIndex - 1));
         $(document).on(`click${eventName}`, nextButton, () => self.goTo(currentIndex + 1));
@@ -804,6 +813,8 @@
         activeCategory = key;
         currentIndex = 0;
 
+        self.setLocalStorage(storageConfig.category, key);
+
         self.updateNavbar(key);
         self.updateBackground(key);
 
@@ -846,6 +857,34 @@
 
         $(thumbnailWrapper).html(thumbnailsHTML);
     };
+
+    self.setLocalStorage = (name, data, expiry = storageConfig.cacheExpiry) => {
+        const expiryMs = expiry * 86400000;
+
+        const toStore = {
+            value: data,
+            expiry: Date.now() + expiryMs,
+        }
+
+        localStorage.setItem(name, JSON.stringify(toStore));
+    }
+
+    self.getLocalStorage = (name) => {
+        const stored = localStorage.getItem(name);
+
+        if (!stored) return null;
+
+        const parsed = JSON.parse(stored);
+
+        if (!parsed.expiry || !parsed.value) return null;
+
+        if (Date.now() > parsed.expiry) {
+            localStorage.removeItem(name);
+            return null;
+        }
+
+        return parsed.value;
+    }
 
     self.init();
 })({});
