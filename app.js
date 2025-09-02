@@ -368,6 +368,9 @@
         navbar: 'ins-navbar',
         carouselWrapper: 'ins-carousel-wrapper',
         slider: 'ins-slider',
+        sliderWrapper: 'ins-slider-wrapper',
+        sliderItem: 'ins-slider-item',
+        sliderImage: 'ins-slider-image',
         slideNav: 'ins-slide-nav',
         navbarItem: 'ins-navbar-item',
         navLink: 'ins-nav-link',
@@ -405,7 +408,8 @@
 
     self.buildCSS = () => {
         const { style } = classes;
-        const { wrapper, backgroundImage, navbar, navbarItem, navLink, active, container } = selectors;
+        const { wrapper, backgroundImage, navbar, navbarItem, navLink, active, container, sliderWrapper,
+            sliderItem, sliderImage, slider, carouselWrapper } = selectors;
 
         const customStyle = `
             <style class="${style}">
@@ -458,6 +462,32 @@
                     background-color: transparent;
                 }
 
+                ${slider} {
+                    width: 100%;
+                    height: 100%;
+                    overflow: hidden;
+                    margin: 0 auto;
+                    max-width: 1168px;
+                }
+
+                ${sliderWrapper} {
+                    display: flex;
+                    flex-wrap: nowrap;
+                    transition: transform .5s ease;
+                    margin-bottom: 30px;
+                }
+
+                ${sliderItem} {
+                    flex: 0 0 100%;
+                    width: 100%;
+                }
+
+                ${sliderImage} {
+                    width: 1168px;
+                    height: auto;
+                    border-radius: 40px;
+                }
+
                 ${active} {
                     border-style: none;
                     background-color: #fef6eb;
@@ -472,7 +502,7 @@
 
     self.buildHTML = () => {
         const { wrapper, container, navbar, carouselWrapper, slider, slideNav, backgroundImage,
-            navbarItem, navLink, active } = classes;
+            navbarItem, navLink, active, sliderWrapper, sliderItem, sliderImage } = classes;
 
         const outerHTML = `
             <div class="${wrapper}">
@@ -486,7 +516,15 @@
                         `).join('')}
                     </div>
                     <div class="${carouselWrapper}">
-                        <div class="${slider}"></div>
+                        <div class="${slider}">
+                            <div class="${sliderWrapper}">
+                                ${config.stuff.items.map(item => `
+                                    <div class="${sliderItem}">
+                                        <img src="${item.image}" class="${sliderImage}">
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
                         <div class="${slideNav}"></div>
                     </div>
                 </div>
