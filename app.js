@@ -3,6 +3,7 @@
 
     let currentPosition = 0;
     let currentIndex = 0;
+    let activeCategory = 'stuff';
 
     const config = {
         stuff: {
@@ -574,19 +575,19 @@
 
         const outerHTML = `
             <div class="${wrapper}">
-                <img src="${config.stuff.items[0].bgImage}" class="${backgroundImage}">
+                <img src="${config[activeCategory].items[0].bgImage}" class="${backgroundImage}">
                 <div class="${container}">
                     <div class="${navbar}">
-                        ${Object.values(config).map((item, index) => `
+                        ${Object.entries(config).map(([key, item]) => `
                             <div class="${navbarItem}">
-                                <button type="button" class="${navLink} ${index === 0 ? active : ''}">${item.title}</button>
+                                <button type="button" data-category="${key}" class="${navLink} ${key === activeCategory ? active : ''}">${item.title}</button>
                             </div>
                         `).join('')}
                     </div>
                     <div class="${carouselWrapper}">
                         <div class="${slider}">
                             <div class="${sliderWrapper}">
-                                ${config.stuff.items.map(item => `
+                                ${config[activeCategory].items.map(item => `
                                     <div class="${sliderItem}">
                                         <img src="${item.image}" class="${sliderImage}">
                                     </div>
@@ -605,7 +606,7 @@
                                 </svg>
                             </div>
                             <div class="${thumbnailWrapper}">
-                                ${config.stuff.items.map((item, index) => `
+                                ${config[activeCategory].items.map((item, index) => `
                                     <div class="${thumbnailItem} ${index === 0 ? thumbActive : ''}">
                                         <img src="${item.image}" class="${thumbnailImage}">
                                     </div>
@@ -620,19 +621,25 @@
     };
 
     self.setEvents = () => {
-        const { prevButton, nextButton, thumbnailItem } = selectors;
+        const { prevButton, nextButton, thumbnailItem, navLink } = selectors;
 
-        $(prevButton).on('click', () => self.goTo(currentIndex - 1));
-        $(nextButton).on('click', () => self.goTo(currentIndex + 1));
+        $(document).on('click', prevButton, () => self.goTo(currentIndex - 1));
+        $(document).on('click', nextButton, () => self.goTo(currentIndex + 1));
 
-        $(thumbnailItem).on('click', (event) => {
+        $(document).on('click', thumbnailItem, (event) => {
             const index = $(event.currentTarget).index();
             self.goTo(index);
+        });
+
+        $(document).on('click', navLink, (event) => {
+            const key = $(event.currentTarget).data('category');
+            if (!key || key === activeCategory) return;
+            self.switchCategory(key);
         });
     };
 
     self.goTo = (index) => {
-        const { sliderWrapper, thumbnailItem } = selectors;
+        const { sliderWrapper } = selectors;
 
         const total = $(sliderWrapper).children().length;
         const step = $(sliderWrapper).children().first().outerWidth();
@@ -643,8 +650,69 @@
 
         $(sliderWrapper).css('transform', `translateX(${currentPosition}px)`);
 
-        $(thumbnailItem).removeClass(classes.thumbActive)
-            .eq(currentIndex).addClass(classes.thumbActive);
+        self.updateThumbnail();
+        self.updateBackground(activeCategory);
+    };
+
+    self.updateBackground = (key) => {
+        const { backgroundImage } = selectors;
+
+        $(backgroundImage).attr('src', config[key].items[currentIndex].bgImage);
+    };
+
+    self.updateThumbnail = () => {
+        const { thumbnailItem } = selectors;
+        const { thumbActive } = classes;
+
+        $(thumbnailItem).removeClass(thumbActive)
+            .eq(currentIndex).addClass(thumbActive);
+    };
+
+    self.switchCategory = (key) => {
+        activeCategory = key;
+        currentIndex = 0;
+
+        self.updateNavbar(key);
+        self.updateBackground(key);
+
+        self.getSlidesHTML(key);
+        self.getThumbnailsHTML(key);
+
+        self.goTo(0);
+    };
+
+    self.updateNavbar = (key) => {
+        const { navLink } = selectors;
+        const { active } = classes;
+
+        $(navLink).removeClass(active)
+            .filter(`[data-category="${key}"]`).addClass(active);
+    };
+
+    self.getSlidesHTML = (key) => {
+        const { sliderWrapper } = selectors;
+        const { sliderItem, sliderImage } = classes;
+
+        const slidesHTML = config[key].items.map(item => `
+            <div class="${sliderItem}">
+                <img src="${item.image}" class="${sliderImage}">
+            </div>
+        `).join('');
+
+        $(sliderWrapper).html(slidesHTML);
+    };
+
+    self.getThumbnailsHTML = (key) => {
+        const { thumbnailWrapper } = selectors;
+        const { thumbActive, thumbnailImage, thumbnailItem } = classes;
+
+        const thumbnailsHTML = config[key].items.map((item, idx) => `
+            <div class="${thumbnailItem} ${idx === 0 ? thumbActive : ''}">
+                <img src="${item.image}" class="${thumbnailImage}">
+            </div>
+        `).join('');
+
+        $(thumbnailWrapper).html(thumbnailsHTML);
     };
 
     self.init();
