@@ -364,7 +364,8 @@
                     image: 'https://cdn05.e-bebek.com/media/c/geri-cagirma-duyurusuaaad.jpg',
                 },
             ]
-        }
+        },
+        eventName: '.ins-event',
     };
 
     const storageConfig = {};
@@ -419,7 +420,19 @@
     };
 
     self.reset = () => {
+        const { wrapper, style } = selectors;
+        const { eventName } = config;
 
+        $(wrapper).remove();
+        $(style).remove();
+        $(document).off(`click${eventName}`);
+        $(document).off(`mousedown${eventName}`);
+        $(document).off(`mousemove${eventName}`);
+        $(document).off(`mouseup${eventName}`);
+        $(document).off(`touchstart${eventName}`);
+        $(document).off(`touchmove${eventName}`);
+        $(document).off(`touchend${eventName}`);
+        $(document).off(`mouseleave${eventName}`);
     };
 
     self.buildCSS = () => {
@@ -663,29 +676,30 @@
 
     self.setEvents = () => {
         const { prevButton, nextButton, thumbnailItem, navLink, sliderWrapper, thumbnailWrapper } = selectors;
+        const { eventName } = config;
 
-        $(document).on('click', prevButton, () => self.goTo(currentIndex - 1));
-        $(document).on('click', nextButton, () => self.goTo(currentIndex + 1));
+        $(document).on(`click${eventName}`, prevButton, () => self.goTo(currentIndex - 1));
+        $(document).on(`click${eventName}`, nextButton, () => self.goTo(currentIndex + 1));
 
-        $(document).on('click', thumbnailItem, (event) => {
+        $(document).on(`click${eventName}`, thumbnailItem, (event) => {
             const index = $(event.currentTarget).index();
             self.goTo(index);
         });
 
-        $(document).on('click', navLink, (event) => {
+        $(document).on(`click${eventName}`, navLink, (event) => {
             const key = $(event.currentTarget).data('category');
             if (!key || key === activeCategory) return;
             self.switchCategory(key);
         });
 
-        $(document).on("mousedown touchstart", sliderWrapper, (event) => {
+        $(document).on(`mousedown${eventName} touchstart${eventName}`, sliderWrapper, (event) => {
             isDragging = true;
             startX = event.pageX || event.originalEvent.touches[0].pageX;
         
             $(sliderWrapper).css("transition", "none");
         });
         
-        $(document).on("mousemove touchmove", (event) => {
+        $(document).on(`mousemove${eventName} touchmove${eventName}`, (event) => {
             if (!isDragging) return;
 
             const x = event.pageX || event.originalEvent.touches[0].pageX;
@@ -694,7 +708,7 @@
             $(sliderWrapper).css("transform", `translateX(${currentPosition + changedX}px)`);
         });
         
-        $(document).on("mouseup touchend", () => {
+        $(document).on(`mouseup${eventName} touchend${eventName}`, () => {
             if (!isDragging) return;
             isDragging = false;
         
@@ -710,7 +724,7 @@
             changedX = 0;
         });
 
-        $(document).on("mousedown", thumbnailWrapper, (event) => {
+        $(document).on(`mousedown${eventName}`, thumbnailWrapper, (event) => {
             event.preventDefault();
 
             thumbDragging = true;
@@ -720,14 +734,14 @@
             $(thumbnailWrapper).css("transform", "none");
         });
         
-        $(document).on("mousemove", (event) => {
+        $(document).on(`mousemove${eventName}`, (event) => {
             if (!thumbDragging) return;
 
             const walk = (event.pageX - thumbStartX) * -1; 
             $(thumbnailWrapper)[0].scrollLeft = thumbScrollLeft + walk;
         });
         
-        $(document).on("mouseup mouseleave", () => {
+        $(document).on(`mouseup${eventName} mouseleave${eventName}`, () => {
             thumbDragging = false;
 
             $(thumbnailWrapper).css("transform", "transform .5s ease");
