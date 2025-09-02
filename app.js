@@ -7,6 +7,9 @@
     let isDragging = false;
     let startX = 0;
     let changedX = 0;
+    let thumbDragging = false;
+    let thumbStartX = 0;
+    let thumbScrollLeft = 0;
 
     const config = {
         stuff: {
@@ -659,7 +662,7 @@
     };
 
     self.setEvents = () => {
-        const { prevButton, nextButton, thumbnailItem, navLink, sliderWrapper } = selectors;
+        const { prevButton, nextButton, thumbnailItem, navLink, sliderWrapper, thumbnailWrapper } = selectors;
 
         $(document).on('click', prevButton, () => self.goTo(currentIndex - 1));
         $(document).on('click', nextButton, () => self.goTo(currentIndex + 1));
@@ -675,17 +678,17 @@
             self.switchCategory(key);
         });
 
-        $(document).on("mousedown touchstart", sliderWrapper, (e) => {
+        $(document).on("mousedown touchstart", sliderWrapper, (event) => {
             isDragging = true;
-            startX = e.pageX || e.originalEvent.touches[0].pageX;
+            startX = event.pageX || event.originalEvent.touches[0].pageX;
         
             $(sliderWrapper).css("transition", "none");
         });
         
-        $(document).on("mousemove touchmove", (e) => {
+        $(document).on("mousemove touchmove", (event) => {
             if (!isDragging) return;
 
-            const x = e.pageX || e.originalEvent.touches[0].pageX;
+            const x = event.pageX || event.originalEvent.touches[0].pageX;
             changedX = x - startX;
 
             $(sliderWrapper).css("transform", `translateX(${currentPosition + changedX}px)`);
@@ -705,6 +708,29 @@
                 self.goTo(currentIndex);
             }
             changedX = 0;
+        });
+
+        $(document).on("mousedown", thumbnailWrapper, (event) => {
+            event.preventDefault();
+
+            thumbDragging = true;
+            thumbStartX = event.pageX;
+            thumbScrollLeft = $(thumbnailWrapper)[0].scrollLeft;
+
+            $(thumbnailWrapper).css("transform", "none");
+        });
+        
+        $(document).on("mousemove", (event) => {
+            if (!thumbDragging) return;
+
+            const walk = (event.pageX - thumbStartX) * -1; 
+            $(thumbnailWrapper)[0].scrollLeft = thumbScrollLeft + walk;
+        });
+        
+        $(document).on("mouseup mouseleave", () => {
+            thumbDragging = false;
+
+            $(thumbnailWrapper).css("transform", "transform .5s ease");
         });
     };
 
