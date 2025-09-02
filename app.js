@@ -2,19 +2,6 @@
     "use strict";
 
     const config = {
-        night: {
-            title: 'Gece Fırsatı',
-            items: [
-                {
-                    bgImage: 'https://cdn05.e-bebek.com/media/c/gece-bg-306.jpg',
-                    image: 'https://cdn05.e-bebek.com/media/c/super-fiyat-secili-20-oyuncak-urunde-sepette-net-40-indirim-ddd.jpg',
-                },
-                {
-                    bgImage: 'https://cdn05.e-bebek.com/media/c/gece-bg-306.jpg',
-                    image: 'https://cdn05.e-bebek.com/media/c/baby-me-zeytinyagli-gunluk-temizleme-mendili-12x50-adet-sepette-2urune-net-50-indirim3108d.jpg',
-                }
-            ]
-        },
         stuff: {
             title: 'Araç Gereç Festivali',
             items: [
@@ -382,7 +369,9 @@
         carouselWrapper: 'ins-carousel-wrapper',
         slider: 'ins-slider',
         slideNav: 'ins-slide-nav',
-
+        navbarItem: 'ins-navbar-item',
+        navLink: 'ins-nav-link',
+        backgroundImage: 'ins-background-image',
     };
 
     const selectors = Object.keys(classes).reduce((createdSelector, key) => (
@@ -415,13 +404,52 @@
 
     self.buildCSS = () => {
         const { style } = classes;
-        const { wrapper } = selectors;
-        
+        const { wrapper, backgroundImage, navbar, navbarItem, navLink } = selectors;
+
         const customStyle = `
             <style class="${style}">
 
                 ${wrapper} {
                     width: 100vw;
+                    position: relative;
+                }
+
+                ${wrapper} *{
+                    box-sizing: border-box;
+                    margin: 0;
+                    padding: 0;
+                }
+
+                ${backgroundImage} {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    z-index: -1;
+                }
+
+                ${navbar} {
+                    display: flex;
+                    justify-content: center;
+                    flex-wrap: nowrap;
+                }
+
+                ${navbarItem} {
+                    margin-right: 5px;
+                }
+
+                ${navLink} {
+                    font-family: 'Poppins', 'cursive';
+                    font-size: 1.4rem;
+                    font-weight: 600;
+                    line-height: 2.86;
+                    color: #fff;
+                    text-transform: uppercase;
+                    padding: 5px 32px;
+                    white-space: nowrap;
+                    background-color: transparent;
                 }
 
             </style>
@@ -430,12 +458,19 @@
     };
 
     self.buildHTML = () => {
-        const { wrapper, container, navbar, carouselWrapper, slider, slideNav } = classes;
+        const { wrapper, container, navbar, carouselWrapper, slider, slideNav, backgroundImage, navbarItem, navLink } = classes;
 
         const outerHTML = `
             <div class="${wrapper}">
+                <img src="${config.stuff.items[0].bgImage}" class="${backgroundImage}">
                 <div class="${container}">
-                    <div class="${navbar}"></div>
+                    <div class="${navbar}">
+                        ${Object.values(config).map(item => `
+                            <div class="${navbarItem}">
+                                <button type="button" class="${navLink}">${item.title}</button>
+                            </div>
+                        `).join('')}
+                    </div>
                     <div class="${carouselWrapper}">
                         <div class="${slider}"></div>
                         <div class="${slideNav}"></div>
