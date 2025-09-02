@@ -1,6 +1,9 @@
 ((self) => {
     "use strict";
 
+    let currentPosition = 0;
+    let currentIndex = 0;
+
     const config = {
         stuff: {
             title: 'Araç Gereç Festivali',
@@ -617,6 +620,31 @@
     };
 
     self.setEvents = () => {
+        const { prevButton, nextButton, thumbnailItem } = selectors;
+
+        $(prevButton).on('click', () => self.goTo(currentIndex - 1));
+        $(nextButton).on('click', () => self.goTo(currentIndex + 1));
+
+        $(thumbnailItem).on('click', (event) => {
+            const index = $(event.currentTarget).index();
+            self.goTo(index);
+        });
+    };
+
+    self.goTo = (index) => {
+        const { sliderWrapper, thumbnailItem } = selectors;
+
+        const total = $(sliderWrapper).children().length;
+        const step = $(sliderWrapper).children().first().outerWidth();
+
+        currentIndex = (index % total + total) % total;
+        
+        currentPosition = -(currentIndex * step);
+
+        $(sliderWrapper).css('transform', `translateX(${currentPosition}px)`);
+
+        $(thumbnailItem).removeClass(classes.thumbActive)
+            .eq(currentIndex).addClass(classes.thumbActive);
     };
 
     self.init();
