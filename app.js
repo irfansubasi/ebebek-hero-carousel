@@ -372,6 +372,7 @@
         navbarItem: 'ins-navbar-item',
         navLink: 'ins-nav-link',
         backgroundImage: 'ins-background-image',
+        active: 'ins-active',
     };
 
     const selectors = Object.keys(classes).reduce((createdSelector, key) => (
@@ -404,7 +405,7 @@
 
     self.buildCSS = () => {
         const { style } = classes;
-        const { wrapper, backgroundImage, navbar, navbarItem, navLink } = selectors;
+        const { wrapper, backgroundImage, navbar, navbarItem, navLink, active, container } = selectors;
 
         const customStyle = `
             <style class="${style}">
@@ -418,6 +419,10 @@
                     box-sizing: border-box;
                     margin: 0;
                     padding: 0;
+                }
+
+                ${container} {
+                    padding: 12px 35px;
                 }
 
                 ${backgroundImage} {
@@ -434,6 +439,7 @@
                     display: flex;
                     justify-content: center;
                     flex-wrap: nowrap;
+                    margin-bottom: 11px;
                 }
 
                 ${navbarItem} {
@@ -452,22 +458,30 @@
                     background-color: transparent;
                 }
 
+                ${active} {
+                    border-style: none;
+                    background-color: #fef6eb;
+                    color: #f28e00;
+                    border-radius: 30px;
+                }
+
             </style>
         `;
         $('head').append(customStyle);
     };
 
     self.buildHTML = () => {
-        const { wrapper, container, navbar, carouselWrapper, slider, slideNav, backgroundImage, navbarItem, navLink } = classes;
+        const { wrapper, container, navbar, carouselWrapper, slider, slideNav, backgroundImage,
+            navbarItem, navLink, active } = classes;
 
         const outerHTML = `
             <div class="${wrapper}">
                 <img src="${config.stuff.items[0].bgImage}" class="${backgroundImage}">
                 <div class="${container}">
                     <div class="${navbar}">
-                        ${Object.values(config).map(item => `
+                        ${Object.values(config).map((item, index) => `
                             <div class="${navbarItem}">
-                                <button type="button" class="${navLink}">${item.title}</button>
+                                <button type="button" class="${navLink} ${index === 0 ? active : ''}">${item.title}</button>
                             </div>
                         `).join('')}
                     </div>
