@@ -507,6 +507,7 @@
 
                 ${slideNav} {
                     position: relative;
+                    max-width: 1290px;
                 }
 
                 ${prevButton},
@@ -535,6 +536,15 @@
                     display: flex;
                     align-items: center;
                     flex-wrap: nowrap;
+                    overflow-x: auto;
+                    overflow-y: hidden;
+                    scroll-behavior: smooth;
+                    -ms-overflow-style: none;
+                    scrollbar-width: none; 
+                }
+
+                ${thumbnailWrapper}::-webkit-scrollbar{
+                    display: none;
                 }
                 
                 ${thumbnailItem} {
@@ -544,6 +554,7 @@
                     border-radius: 5px;
                     overflow: hidden;
                     margin-right: 15px;
+                    flex: 0 0 120px;
                 }
                 
                 ${thumbnailImage} {
@@ -652,12 +663,7 @@
 
         self.updateThumbnail();
         self.updateBackground(activeCategory);
-    };
-
-    self.updateBackground = (key) => {
-        const { backgroundImage } = selectors;
-
-        $(backgroundImage).attr('src', config[key].items[currentIndex].bgImage);
+        self.updateThumbScroll();
     };
 
     self.updateThumbnail = () => {
@@ -666,6 +672,33 @@
 
         $(thumbnailItem).removeClass(thumbActive)
             .eq(currentIndex).addClass(thumbActive);
+    };
+
+    self.updateBackground = (key) => {
+        const { backgroundImage } = selectors;
+
+        $(backgroundImage).attr('src', config[key].items[currentIndex].bgImage);
+    };
+    
+    self.updateThumbScroll = () => {
+        const { thumbnailWrapper, thumbnailItem } = selectors;
+
+        const strip = $(thumbnailWrapper)[0];
+
+        const element = $(thumbnailItem).get(currentIndex);
+
+        const viewport = strip.clientWidth;
+        const elementLeft = element.offsetLeft;
+        const elementWidth = element.offsetWidth;
+
+        let left = elementLeft - (viewport - elementWidth) / 2;
+        if (left < 0) left = 0;
+
+        const maxLeft = strip.scrollWidth - viewport;
+        if (left > maxLeft) left = maxLeft;
+
+        strip.scrollTo({ left, behavior: 'smooth' });
+
     };
 
     self.switchCategory = (key) => {
