@@ -462,6 +462,7 @@
         carouselWrapper: 'ins-carousel-wrapper',
         slider: 'ins-slider',
         sliderWrapper: 'ins-slider-wrapper',
+        sliderItemWrapper: 'ins-slider-item-wrapper',
         sliderItem: 'ins-slider-item',
         sliderImage: 'ins-slider-image',
         slideNav: 'ins-slide-nav',
@@ -525,7 +526,7 @@
         const { style } = classes;
         const { wrapper, backgroundImage, navbar, navbarItem, navLink, active, container, sliderWrapper,
             sliderItem, sliderImage, slider, carouselWrapper, prevButton, nextButton, thumbnailWrapper,
-            thumbnailItem, thumbnailImage, slideNav, thumbActive } = selectors;
+            thumbnailItem, thumbnailImage, slideNav, thumbActive, sliderItemWrapper } = selectors;
 
         const customStyle = `
             <style class="${style}">
@@ -597,10 +598,17 @@
                     flex-wrap: nowrap;
                     transition: transform .5s ease;
                     margin-bottom: 30px;
+                    gap: 120px;
+                }
+
+                ${sliderItemWrapper} {
+                    flex: 0 0 100%;
+                    width: 100%;
+                    display: flex;
+                    justify-content: center;
                 }
 
                 ${sliderItem} {
-                    flex: 0 0 100%;
                     width: 100%;
                     display: flex;
                     justify-content: center;
@@ -673,7 +681,7 @@
                 ${active} {
                     border-style: none;
                     background-color: #fef6eb;
-                    color: #f28e00;
+                    color: #f28e00!important;
                     border-radius: 30px;
                 }
 
@@ -701,7 +709,57 @@
                     ${sliderImage} {
                         width: 1120px;
                     }
+                }
 
+                @media (max-width: 1024px){
+
+                    ${container} {
+                        padding: 15px 0 0 25px;
+                    }
+
+                    ${navbar} {
+                        margin-bottom: 15px;
+                        justify-content: flex-start;
+                    }
+
+                    ${carouselWrapper} {
+                        padding: 0 5px 0 0;
+                    }
+
+                    ${slider} {
+                        overflow: hidden;
+                        border-radius: 4px 5px 5px 4px;
+                    }
+
+                    ${sliderWrapper} {
+                        margin-bottom: 0;
+                        gap: 10px;
+                    }
+
+                    ${slideNav} {
+                        display: none;
+                    }
+
+                    ${navLink} {
+                        padding: 12px 8px;
+                        font-size: 1.2rem;
+                        white-space: nowrap;
+                        color: #6f6f6f;
+                        line-height: 1;
+                    }
+
+                    ${backgroundImage} {
+                        display: none;
+                    }
+
+                    ${sliderItemWrapper}{
+                        flex: 0 0 93.926%;
+                    }
+
+                    ${sliderImage} {
+                        width: 100%;
+                        border-radius: 0;
+                    }
                 }
             </style>
         `;
@@ -711,7 +769,7 @@
     self.buildHTML = () => {
         const { wrapper, container, navbar, carouselWrapper, slider, slideNav, backgroundImage,
             navbarItem, navLink, active, sliderWrapper, sliderItem, sliderImage, prevButton, nextButton,
-            thumbnailWrapper, thumbnailItem, thumbnailImage, thumbActive } = classes;
+            thumbnailWrapper, thumbnailItem, thumbnailImage, thumbActive, sliderItemWrapper } = classes;
 
         const outerHTML = `
             <div class="${wrapper}">
@@ -728,8 +786,10 @@
                         <div class="${slider}">
                             <div class="${sliderWrapper}">
                                 ${config[activeCategory].items.map(item => `
-                                    <div class="${sliderItem}">
-                                        <img src="${item.image}" class="${sliderImage}" draggable="false">
+                                    <div class="${sliderItemWrapper}">
+                                        <div class="${sliderItem}">
+                                            <img src="${self.getSlideSrc(item)}" class="${sliderImage}" draggable="false">
+                                        </div>
                                     </div>
                                 `).join('')}
                             </div>
@@ -757,7 +817,7 @@
                 </div>
             </div>
         `;
-        $('main').prepend(outerHTML);
+        $('.Section1').prepend(outerHTML);
     };
 
     self.setEvents = () => {
@@ -838,7 +898,17 @@
         const { sliderWrapper } = selectors;
 
         const total = $(sliderWrapper).children().length;
-        const step = $(sliderWrapper).children().first().outerWidth();
+
+        const first = $(sliderWrapper).children().first();
+        const childWidth = first.outerWidth() || 0;
+        const wrapperEl = $(sliderWrapper)[0];
+        let gap = 0;
+
+        if (wrapperEl && window.getComputedStyle) {
+            const styles = getComputedStyle(wrapperEl);
+            gap = parseFloat(styles.columnGap || styles.gap || '0') || 0;
+        }
+        const step = childWidth + gap;
 
         currentIndex = (index % total + total) % total;
 
@@ -911,11 +981,13 @@
 
     self.getSlidesHTML = (key) => {
         const { sliderWrapper } = selectors;
-        const { sliderItem, sliderImage } = classes;
+        const { sliderItem, sliderImage, sliderItemWrapper } = classes;
 
         const slidesHTML = config[key].items.map(item => `
             <div class="${sliderItem}">
-                <img src="${item.image}" class="${sliderImage}" draggable="false">
+                <div class="${sliderItemWrapper}">
+                    <img src="${self.getSlideSrc(item)}" class="${sliderImage}" draggable="false">
+                </div>
             </div>
         `).join('');
 
@@ -933,6 +1005,12 @@
         `).join('');
 
         $(thumbnailWrapper).html(thumbnailsHTML);
+    };
+
+    self.getSlideSrc = (item) => {
+        const isMobile = window.matchMedia && matchMedia('(max-width: 1024px)').matches;
+
+        return (isMobile && item.mobile) ? item.mobile : item.image;
     };
 
     self.setLocalStorage = (name, data, expiry = storageConfig.cacheExpiry) => {
