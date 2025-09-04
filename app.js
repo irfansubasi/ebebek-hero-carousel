@@ -598,7 +598,7 @@
                     flex-wrap: nowrap;
                     transition: transform .5s ease;
                     margin-bottom: 30px;
-                    gap: 120px;
+                    gap: 0;
                 }
 
                 ${sliderItemWrapper} {
@@ -904,11 +904,23 @@
 
         const total = $(sliderWrapper).children().length;
 
+        if (index >= total) {
+            const nextKey = self.getClosestCategoryKey('next');
+            if (nextKey) return self.switchCategory(nextKey, 0);
+        }
+        if (index < 0) {
+            const prevKey = self.getClosestCategoryKey('prev');
+            if (prevKey) {
+                const lastCount = (config[prevKey]?.items?.length) || 1;
+                return self.switchCategory(prevKey, lastCount - 1);
+            }
+        }
+
         const first = $(sliderWrapper).children().first();
         const childWidth = first.outerWidth() || 0;
         const wrapperEl = $(sliderWrapper)[0];
         let gap = 0;
-
+        
         if (wrapperEl && window.getComputedStyle) {
             const styles = getComputedStyle(wrapperEl);
             gap = parseFloat(styles.columnGap || styles.gap || '0') || 0;
@@ -916,7 +928,6 @@
         const step = childWidth + gap;
 
         currentIndex = (index % total + total) % total;
-
         currentPosition = -(currentIndex * step);
 
         $(sliderWrapper).css('transform', `translateX(${currentPosition}px)`);
@@ -961,7 +972,7 @@
 
     };
 
-    self.switchCategory = (key) => {
+    self.switchCategory = (key, initialIndex = 0) => {
         activeCategory = key;
         currentIndex = 0;
 
@@ -973,7 +984,7 @@
         self.getSlidesHTML(key);
         self.getThumbnailsHTML(key);
 
-        self.goTo(0);
+        self.goTo(initialIndex);
     };
 
     self.updateNavbar = (key) => {
@@ -1016,6 +1027,17 @@
         const isMobile = window.matchMedia && matchMedia('(max-width: 1024px)').matches;
 
         return (isMobile && item.mobile) ? item.mobile : item.image;
+    };
+
+    self.getClosestCategoryKey = (direction) => {
+        const keys = Object.keys(config);
+        
+        const index = keys.indexOf(activeCategory);
+
+        if (index === -1) return null;
+        if (direction === 'next') return keys[(index + 1) % keys.length];
+        if (direction === 'prev') return keys[(index - 1 + keys.length) % keys.length];
+        return null;
     };
 
     self.setLocalStorage = (name, data, expiry = storageConfig.cacheExpiry) => {
