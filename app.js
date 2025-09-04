@@ -984,8 +984,8 @@
         const { sliderItem, sliderImage, sliderItemWrapper } = classes;
 
         const slidesHTML = config[key].items.map(item => `
-            <div class="${sliderItem}">
-                <div class="${sliderItemWrapper}">
+            <div class="${sliderItemWrapper}">
+                <div class="${sliderItem}">
                     <img src="${self.getSlideSrc(item)}" class="${sliderImage}" draggable="false">
                 </div>
             </div>
