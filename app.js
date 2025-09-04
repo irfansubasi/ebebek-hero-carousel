@@ -720,7 +720,12 @@
                     ${navbar} {
                         margin-bottom: 15px;
                         justify-content: flex-start;
+                        overflow-x: auto;
+                        overflow-y: hidden;
+                        scroll-behavior: smooth;
                     }
+                    ${navbar}::-webkit-scrollbar{ display: none; }
+                    ${navbarItem}{ flex: 0 0 auto; }
 
                     ${carouselWrapper} {
                         padding: 0 5px 0 0;
